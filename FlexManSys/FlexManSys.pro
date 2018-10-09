@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2018-10-07T23:16:44
+# Project created by QtCreator 2018-10-09T12:29:38
 #
 #-------------------------------------------------
 
@@ -11,12 +11,12 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = FlexManSys
 TEMPLATE = app
 
-CONFIG += c++11
+CONFIG+=c++11
 QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += main.cpp\
-        widget.cpp
+        mainwindow.cpp
 
-HEADERS  += widget.h
+HEADERS  += mainwindow.h
 
-FORMS    += widget.ui
+FORMS    += mainwindow.ui
