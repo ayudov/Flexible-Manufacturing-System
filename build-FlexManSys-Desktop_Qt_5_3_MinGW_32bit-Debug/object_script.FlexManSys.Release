@@ -1,0 +1,12 @@
+INPUT(
+./release\main.o
+./release\mainwindow.o
+./release\Operation.o
+./release\Billet.o
+./release\addbillet.o
+./release\matrix.o
+./release\qrc_resources.o
+./release\moc_mainwindow.o
+./release\moc_addbillet.o
+./release\moc_matrix.o
+);

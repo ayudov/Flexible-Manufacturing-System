@@ -1,0 +1,12 @@
+INPUT(
+./debug\main.o
+./debug\mainwindow.o
+./debug\Operation.o
+./debug\Billet.o
+./debug\addbillet.o
+./debug\matrix.o
+./debug\qrc_resources.o
+./debug\moc_mainwindow.o
+./debug\moc_addbillet.o
+./debug\moc_matrix.o
+);

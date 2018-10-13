@@ -15,8 +15,21 @@ CONFIG+=c++11
 QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    Operation.cpp \
+    Billet.cpp \
+    addbillet.cpp \
+    matrix.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    Billet.h \
+    Operation.h \
+    addbillet.h \
+    matrix.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    addbillet.ui \
+    matrix.ui
+
+RESOURCES += \
+    resources.qrc

@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/new/add_remove">
+        <file>256-256-ad37efe2ebc423365b783fa170de6027.png</file>
+        <file>plus-icon-green-md.png</file>
+        <file>dot_matrix.png</file>
+    </qresource>
+</RCC>
