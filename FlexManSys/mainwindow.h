@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QList>
+#include <QMap>
 #include <Billet.h>
 #include "addbillet.h"
 #include "matrix.h"
@@ -29,6 +30,7 @@ private:
     Ui::MainWindow *ui;
     addBillet *addbill_;
     Matrix *matrix_;
+    QMap<int,QList<Billet>> groups_;
     QList<Billet> billetCollection_;
 };
 

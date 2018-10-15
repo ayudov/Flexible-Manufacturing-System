@@ -68,7 +68,10 @@ void addBillet::on_discardLast_clicked()
     ui->textEdit->textCursor().deletePreviousChar();
     ui->textEdit->textCursor().deletePreviousChar();
     this->resultCollection_.removeLast();
-    ui->buttonBox->setEnabled(false);
+    if(ui->textEdit->toPlainText().isEmpty())
+    {
+        ui->buttonBox->setEnabled(false);
+    }
 }
 
 void addBillet::on_discardAll_clicked()

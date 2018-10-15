@@ -2,6 +2,7 @@
 #define MATRIX_H
 
 #include <QWidget>
+#include <QMap>
 #include <Billet.h>
 #include <QGraphicsScene>
 
@@ -23,10 +24,13 @@ signals:
 
 private:
     void computeMatrix(QList<Billet> billList);
-    void computeUniqueOperationsCount(QList<Billet> billList);
-    int uniqueOperationsCount_;
-    QGraphicsScene *scene;
-    QList<Operation> uniqueOperations;
+    QList<Operation> computeUniqueOperationsCount(QList<Billet> billList);
+    QList<Operation> computeUniqueOperationsCount(Billet billet);
+    void setGroups(int **matrix,int size);
+    int **matrix_;
+    int uniqueOperationsCount_ = 0;
+    QList<Operation> uniqueOperations_;
+    QMap<int,QList<int>> groups_;
     Ui::Matrix *ui;
 };
 

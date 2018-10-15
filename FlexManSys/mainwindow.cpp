@@ -54,7 +54,6 @@ void MainWindow::on_pushButton_clicked()
     if(billetCollection_.count()>=2)
     {
         matrix_->SetMatrix(this->billetCollection_);
-        qDebug()<<QString::number(matrix_->GetUniqueOperationsCount());
         matrix_->show();
     }
 }

@@ -13,9 +13,9 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
-#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableWidget>
+#include <QtWidgets/QTextBrowser>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -23,22 +23,22 @@ QT_BEGIN_NAMESPACE
 class Ui_Matrix
 {
 public:
-    QGridLayout *gridLayout;
     QTableWidget *tableWidget;
+    QTextBrowser *textBrowser;
 
     void setupUi(QWidget *Matrix)
     {
         if (Matrix->objectName().isEmpty())
             Matrix->setObjectName(QStringLiteral("Matrix"));
         Matrix->resize(640, 480);
-        gridLayout = new QGridLayout(Matrix);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
         tableWidget = new QTableWidget(Matrix);
         tableWidget->setObjectName(QStringLiteral("tableWidget"));
         tableWidget->setEnabled(true);
-
-        gridLayout->addWidget(tableWidget, 0, 0, 1, 1);
-
+        tableWidget->setGeometry(QRect(9, 9, 621, 311));
+        tableWidget->setShowGrid(true);
+        textBrowser = new QTextBrowser(Matrix);
+        textBrowser->setObjectName(QStringLiteral("textBrowser"));
+        textBrowser->setGeometry(QRect(140, 340, 301, 121));
 
         retranslateUi(Matrix);
 
