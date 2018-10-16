@@ -16,6 +16,7 @@ void Matrix::SetMatrix(QList<Billet> billList)
     uniqueOperations_ = computeUniqueOperationsCount(billList);
     computeMatrix(billList);
     setGroups(matrix_, billList.count());
+    delete matrix_;
 }
 
 QList<Operation> Matrix::computeUniqueOperationsCount(Billet billet)
@@ -182,23 +183,25 @@ void Matrix::setGroups(int **matrix,int size)
         }
     } while(objectsNumber != 0);
     QString text;
-        for(int key : groups_.keys())
+    int i = 0;
+    for(int key : groups_.keys())
+    {
+        text = QString("Група %1: {").arg(QString::number(i));
+        for(int value : groups_[key])
         {
-            int i = 0;
-            text = QString("Група %1: {").arg(QString::number(i));
-            for(int value : groups_[key])
-            {
-                text.append(QString("%1 ").arg(QString::number(value)));
-            }
-            text.append(QString("}"));
-            ui->textBrowser->append(text);
-            i++;
+            text.append(QString("%1 ").arg(QString::number(value)));
         }
-
+        text.append(QString("}"));
+        ui->textBrowser->append(text);
+        i++;
+    }
+    groups_.clear();
 }
 
 
 Matrix::~Matrix()
 {
+    delete matrix_;
+    ui->textBrowser->clear();
     delete ui;
 }
