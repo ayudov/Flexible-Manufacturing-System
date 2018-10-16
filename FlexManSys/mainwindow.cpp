@@ -3,6 +3,7 @@
 #include "addbillet.h"
 #include <QDebug>
 #include <Billet.h>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -55,6 +56,10 @@ void MainWindow::on_pushButton_clicked()
     {
         matrix_->SetMatrix(this->billetCollection_);
         matrix_->show();
+    }
+    else
+    {
+        QMessageBox::about(this, "Помилка!", "Матриця пуста або має менше двох об'єктів");
     }
 }
 
