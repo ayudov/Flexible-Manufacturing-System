@@ -16,7 +16,6 @@ void Matrix::SetMatrix(QList<Billet> billList)
     uniqueOperations_ = computeUniqueOperationsCount(billList);
     computeMatrix(billList);
     setGroups(matrix_, billList.count());
-    delete matrix_;
 }
 
 QList<Operation> Matrix::computeUniqueOperationsCount(Billet billet)
