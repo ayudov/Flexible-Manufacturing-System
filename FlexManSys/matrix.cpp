@@ -101,6 +101,8 @@ void Matrix::setGroups(int **matrix,int size)
     bool containsRow = false;
     bool containsColumn = false;
     int currentElement = 0;
+    int group = 1;
+    groups_.clear();
     do
     {
         max = 0;
@@ -119,84 +121,99 @@ void Matrix::setGroups(int **matrix,int size)
             }
         }
         matrix[row][column] = 0;
-        for(QList<int> value: groups_.values())
+        for(int i = 1; i <= groups_.count(); i++)
         {
-            if(value.contains(row))
+            if(groups_[i].contains(row))
             {
                 containsRow = true;
             }
-            if(value.contains(column))
+            if(groups_[i].contains(column))
             {
                 containsColumn = true;
             }
         }
-        if(objectsNumber == 1 && !(containsRow && containsColumn))
+        if(!containsRow && !containsColumn)
         {
-            QList<int> obj;
-            if(!containsRow)
-            {
-                objectsNumber-=1;
-                obj.append(row);
-            }
-            if(!containsColumn)
-            {
-                objectsNumber-=1;
-                obj.append(column);
-            }
-            if(!obj.isEmpty())
-            {
-                groups_.insert(max,obj);
-            }
+            group_.append(row);
+            group_.append(column);
+            collectGroup(max, row, column, size, true);
+            collectGroup(max, row, column, size, false);
+            groups_.insert(group, group_);
+            objectsNumber-=group_.count();
+            group_.clear();
+            group++;
+        }
+        if((containsRow ^ containsColumn) && objectsNumber == 1)
+        {
+            group_.append(containsRow ? column : row);
+            groups_.insert(group, group_);
             break;
-        }
-        if(!(containsRow && containsColumn) && groups_.contains(max))
-        {
-            if(!groups_[max].contains(row))
-            {
-                objectsNumber-=1;
-                groups_[max].append(row);
-            }
-            if(!groups_[max].contains(column))
-            {
-                objectsNumber-=1;
-                groups_[max].append(column);
-            }
-        }
-        if(!groups_.contains(max) && !(containsRow || containsColumn))
-        {
-            QList<int> obj;
-            if(!containsRow)
-            {
-                objectsNumber-=1;
-                obj.append(row);
-            }
-            if(!containsColumn)
-            {
-                objectsNumber-=1;
-                obj.append(column);
-            }
-            if(!obj.isEmpty())
-            {
-                groups_.insert(max,obj);
-            }
         }
     } while(objectsNumber != 0);
     QString text;
-    int i = 0;
     for(int key : groups_.keys())
     {
-        text = QString("Група %1: {").arg(QString::number(i));
+        text = QString("Група %1: {").arg(QString::number(key));
         for(int value : groups_[key])
         {
             text.append(QString("%1 ").arg(QString::number(value)));
         }
         text.append(QString("}"));
         ui->textBrowser->append(text);
-        i++;
     }
     groups_.clear();
 }
 
+void Matrix::collectGroup(int maxElement, int row, int colomn, int size, bool direction)
+{
+    matrix_[row][colomn] = 0;
+    bool contains = false;
+    if(direction)
+    {
+        for(int i = 0; i < size ; i++)
+        {
+            if(matrix_[row][i] == maxElement)
+            {
+                for(int j = 1; j <= groups_.count(); j++)
+                {
+                    if(groups_[j].contains(i))
+                    {
+                        contains = true;
+                        break;
+                    }
+                }
+                if(!contains)
+                {
+                    group_.append(i);
+                    collectGroup(maxElement, row, i, size, !direction);
+                }
+            }
+        }
+    }
+    else
+    {
+        for(int i = 0; i < size ; i++)
+        {
+            if(matrix_[i][colomn] == maxElement)
+            {
+                for(int j = 1; j <= groups_.count(); j++)
+                {
+                    if(groups_[j].contains(i))
+                    {
+                        contains = true;
+                        break;
+                    }
+                }
+                if(!contains)
+                {
+                    group_.append(i);
+                    collectGroup(maxElement, row, i, size, !direction);
+                }
+            }
+        }
+    }
+    return;
+}
 
 Matrix::~Matrix()
 {
