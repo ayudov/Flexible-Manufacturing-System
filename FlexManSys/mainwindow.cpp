@@ -12,7 +12,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     matrix_ = new Matrix();
     ui->listWidget->setBackgroundRole(QPalette::Base);
-    connect(matrix_,&Matrix::openWindow,this,&MainWindow::show);
 }
 
 void MainWindow::on_addBillet_clicked()
@@ -65,7 +64,6 @@ void MainWindow::on_pushButton_clicked()
 
 MainWindow::~MainWindow()
 {
-    delete matrix_;
     ui->listWidget->clear();
     delete ui;
 }

@@ -162,6 +162,7 @@ void Matrix::setGroups(int **matrix,int size)
         ui->textBrowser->append(text);
     }
     groups_.clear();
+    delete matrix_;
 }
 
 void Matrix::collectGroup(int maxElement, int row, int colomn, int size, bool direction)
@@ -182,8 +183,9 @@ void Matrix::collectGroup(int maxElement, int row, int colomn, int size, bool di
                         break;
                     }
                 }
-                if(!contains)
+                if(!contains && !group_.contains(i))
                 {
+                    matrix_[row][i] = 0;
                     group_.append(i);
                     collectGroup(maxElement, row, i, size, !direction);
                 }
@@ -204,8 +206,9 @@ void Matrix::collectGroup(int maxElement, int row, int colomn, int size, bool di
                         break;
                     }
                 }
-                if(!contains)
+                if(!contains && !group_.contains(i))
                 {
+                    matrix_[i][colomn] = 0;
                     group_.append(i);
                     collectGroup(maxElement, row, i, size, !direction);
                 }

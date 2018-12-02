@@ -19,8 +19,6 @@ public:
     void SetMatrix(QList<Billet> billList);
     int GetUniqueOperationsCount();
     ~Matrix();
-signals:
-    void openWindow();
 
 private:
     void computeMatrix(QList<Billet> billList);
