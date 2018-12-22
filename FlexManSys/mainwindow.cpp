@@ -1,9 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "addbillet.h"
+#include <QProcess>
 #include <QDebug>
 #include <Billet.h>
 #include <QMessageBox>
+#include <QFile>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -54,11 +56,52 @@ void MainWindow::on_pushButton_clicked()
     if(billetCollection_.count()>=2)
     {
         matrix_->SetMatrix(this->billetCollection_);
+        makeGraphs();
         matrix_->show();
     }
     else
     {
         QMessageBox::about(this, "Помилка!", "Матриця пуста або має менше двох об'єктів");
+    }
+}
+
+void MainWindow::makeGraphs()
+{
+    QFile file;
+    QMap<int,QPair<QList<int>,QList<Operation>>> clarifiedGroups;
+    clarifiedGroups = matrix_->GetClarifiedGroups();
+    for(auto value : clarifiedGroups)
+    {
+        file.setFileName("myGraph"+QString::number(clarifiedGroups.key(value))+".dot");
+        if(file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+        {
+            QTextStream writeStream(&file);
+            writeStream.setCodec("Windows-1251");
+            writeStream << "digraph Group" << QString::number(clarifiedGroups.key(value)) << "{ \n";
+            for(int bill: value.first)
+            {
+                Billet billet = billetCollection_[bill];
+                Operation lastOp = billet.GetAllOperations().last();
+                for(Operation op : billet.GetAllOperations())
+                {
+                    QString last = lastOp == op ? ";\n" : "->";
+                    switch(op.GetOperationType())
+                    {
+                        case OperationType::TypeT : writeStream << "T" << QString::number(op.GetOperationNumber()) << last;
+                            break;
+                        case OperationType::TypeF : writeStream << "F" << QString::number(op.GetOperationNumber()) << last;
+                            break;
+                        case OperationType::TypeC : writeStream << "C" << QString::number(op.GetOperationNumber()) << last;
+                            break;
+                        case OperationType::TypeR : writeStream << "R" << QString::number(op.GetOperationNumber()) << last;
+                            break;
+                    default: writeStream << "\n";
+                    }
+                }
+            }
+            writeStream << "}\n";
+            file.close();
+        }
     }
 }
 

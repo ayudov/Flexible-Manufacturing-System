@@ -35,6 +35,11 @@ bool Operation::operator==(const Operation op1)
     return &op1==this || (op1.opType_==opType_ && op1.opNumber_==opNumber_);
 }
 
+bool Operation::operator!=(const Operation op1)
+{
+    return &op1!=this || (op1.opType_!=opType_ || op1.opNumber_!=opNumber_);
+}
+
 Operation::~Operation()
 {
 

@@ -16,7 +16,9 @@ void Matrix::SetMatrix(QList<Billet> billList)
     uniqueOperations_ = computeUniqueOperationsCount(billList);
     computeMatrix(billList);
     setGroups(matrix_, billList.count());
+    clarifyGroups(billList);
 }
+
 
 QList<Operation> Matrix::computeUniqueOperationsCount(Billet billet)
 {
@@ -161,7 +163,6 @@ void Matrix::setGroups(int **matrix,int size)
         text.append(QString("}"));
         ui->textBrowser->append(text);
     }
-    groups_.clear();
     delete matrix_;
 }
 
@@ -216,6 +217,209 @@ void Matrix::collectGroup(int maxElement, int row, int colomn, int size, bool di
         }
     }
     return;
+}
+
+QMap<int,QList<int>> Matrix::GetFormedGroups()
+{
+    return groups_;
+}
+
+QMap<int,QPair<QList<int>,QList<Operation>>> Matrix::GetClarifiedGroups()
+{
+    return clarifiedGroups_;
+}
+
+
+void Matrix::clarifyGroups(QList<Billet> billList)
+{
+    QPair<QList<int>,QList<Operation>> pair;
+    int g = 1;
+
+    //Сформувати групи
+    for(QList<int> value : groups_.values())
+    {
+        QList<Operation> groupOps;
+        groupOps.clear();
+        for(int i : value)
+        {
+            for(Operation op : billList[i].GetAllOperations())
+            {
+                if(!groupOps.contains(op))
+                {
+                    groupOps.append(op);
+                }
+            }
+        }
+        pair.first = value;
+        pair.second = groupOps;
+        clarifiedGroups_.insert(g, pair);
+        groupOps.clear();
+        g++;
+    }
+
+    //Впорядкувати групи
+    for(int i = 1; i <= clarifiedGroups_.count(); i++)
+    {
+        for(int j = i+1; j <= clarifiedGroups_.count(); j++)
+        {
+            auto a = clarifiedGroups_[i];
+            auto b = clarifiedGroups_[j];
+            if(a.second.count() < b.second.count())
+            {
+                clarifiedGroups_[i] = clarifiedGroups_[j];
+                clarifiedGroups_[j] = a;
+            }
+        }
+
+    }
+
+    //Оптимізація групп
+    bool contains = true;
+    for(int i = 1; i <= clarifiedGroups_.count(); i++)
+    {
+        auto a = clarifiedGroups_[i];
+        for(int j = i+1; j <= clarifiedGroups_.count(); j++)
+        {
+            auto b = clarifiedGroups_[j];
+            for(int k : b.first)
+            {
+                contains = true;
+                auto billet = billList[k];
+                for(Operation op : billet.GetAllOperations())
+                {
+                    if(!a.second.contains(op))
+                    {
+                        contains = false;
+                    }
+                }
+                if(contains)
+                {
+                    clarifiedGroups_[i].first.append(k);
+                    clarifiedGroups_[j].first.removeOne(k);
+                }
+            }
+            if(b.first.count()==0)
+            {
+                clarifiedGroups_.remove(j);
+            }
+        }
+    }
+    g = 0;
+    /*for(auto pair: clarifiedGroups_)
+    {
+        QMap<Operation,QList<Operation>> currentGraph = graphs_[g];
+        QList<Operation> connections;
+        connections.clear();
+        for(Operation op: pair.second)
+        {
+            currentGraph.insert(op,connections);
+        }
+        for(int i: pair.first)
+        {
+            Billet bill = billList[i];
+            Operation current;
+            Operation previous;
+            current = bill.GetAllOperations()[0];
+            for(Operation op: bill.GetAllOperations())
+            {
+                if(current == op)
+                {
+                    continue;
+                }
+                previous = current;
+                current = op;
+                if(!currentGraph[previous].contains(current))
+                {
+                    currentGraph[previous].append(current);
+                }
+            }
+        }
+        graphs_[g] = currentGraph;
+        g++;
+    }*/
+    //checkGraphs();
+    QString text;
+    text.append(QString("Уточненні группи"));
+    for(int key : clarifiedGroups_.keys())
+    {
+        text = QString("Група %1: {").arg(QString::number(key));
+        for(int value : clarifiedGroups_[key].first)
+        {
+            text.append(QString("%1 ").arg(QString::number(value)));
+        }
+        text.append(QString("}"));
+        ui->textBrowser->append(text);
+    }
+}
+
+
+void Matrix::checkGraphs()
+{
+   //перше правило (всі вхідні)
+ /*  int m = 1;
+   bool moduleAppended = false;
+   for(int i = 0; i < graphs_.count(); i++)
+   {
+       for(QMap<Operation,QList<Operation>> graph: graphs_[i])
+       {
+           for(auto item: graph)
+           {
+               if(item.value.isEmpty)
+               {
+                   modules_[m].append(item.key);
+                   moduleAppended = true;
+               }
+           }
+       }
+       if(moduleAppended)
+       {
+           m++;
+           moduleAppended = false;
+       }
+   }
+
+   //друге правило (всі вихідні)
+   bool moduleAppended = false;
+   for(int i = 0; i < graphs_.count(); i++)
+   {
+       for(Operation key: graphs_[i].keys())
+       {
+           for(Operation value: graphs_[i].values())
+           {
+               if(value == key)
+               {
+                  continue;
+               }
+               modules_[m].append(item.key);
+               moduleAppended = true;
+           }
+       }
+       if(moduleAppended)
+       {
+           m++;
+       }
+   }
+   //третє правило (всі цикли)
+   bool moduleAppended = false;
+   for(int i = 0; i < graphs_.count(); i++)
+   {
+       for(Operation key: graphs_[i].keys())
+       {
+           for(int value: modules_.value)
+           {
+               if(value == key)
+               {
+                  continue;
+               }
+               modules_[m].append(item.key);
+               moduleAppended = true;
+           }
+       }
+       if(moduleAppended)
+       {
+           m++;
+       }
+   }*/
 }
 
 Matrix::~Matrix()

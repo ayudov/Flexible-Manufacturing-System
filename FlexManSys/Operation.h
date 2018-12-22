@@ -23,6 +23,7 @@ public:
     OperationNameSpace::OperationType GetOperationType();
     int GetOperationNumber();
     bool operator==(const Operation op1);
+    bool operator!=(const Operation op1);
 private:
     OperationNameSpace::OperationType opType_;
     int opNumber_;

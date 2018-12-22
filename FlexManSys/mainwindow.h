@@ -31,6 +31,7 @@ private:
     Matrix *matrix_;
     QMap<int,QList<Billet>> groups_;
     QList<Billet> billetCollection_;
+    void makeGraphs();
 };
 
 #endif // MAINWINDOW_H
