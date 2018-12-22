@@ -10,6 +10,21 @@ namespace Ui {
 class Matrix;
 }
 
+struct Node
+{
+    Operation node;
+    QList<Node> *out;
+    QList<Node> *in;
+    bool operator== (const Node n)
+    {
+        return this == &n || (this->node == n.node && this->out == n.out);
+    }
+    bool operator!= (const Node n)
+    {
+        return this != &n || (this->node != n.node && this->out != n.out);
+    }
+};
+
 
 class Matrix : public QWidget
 {
@@ -31,14 +46,16 @@ private:
     QList<Operation> computeUniqueOperationsCount(QList<Billet> billList);
     QList<Operation> computeUniqueOperationsCount(Billet billet);
     void checkGraphs();
+    void recursiveFourthRule(Node firstNode, QList<Node> *nextNodes);
     int **matrix_;
     int uniqueOperationsCount_ = 0;
     QList<Operation> uniqueOperations_;
+    QList<Node> cycleStack_;
     QList<int> group_;
     QMap<int,QList<int>> groups_;
     QMap<int,QPair<QList<int>,QList<Operation>>> clarifiedGroups_;
-    QList<QMap<Operation,QList<Operation>>> graphs_;
-    QMap<int,QList<int>> modules_;
+    QList<QList<Node>> graphs_;
+    QList<QList<Operation>> modules_;
     Ui::Matrix *ui;
 };
 

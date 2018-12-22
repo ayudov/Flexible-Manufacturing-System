@@ -53,7 +53,7 @@ void MainWindow::on_removeBillet_clicked()
 
 void MainWindow::on_pushButton_clicked()
 {
-    if(billetCollection_.count()>=2)
+    if(billetCollection_.count() > 1)
     {
         matrix_->SetMatrix(this->billetCollection_);
         makeGraphs();
