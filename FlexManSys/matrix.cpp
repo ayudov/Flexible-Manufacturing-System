@@ -17,6 +17,7 @@ void Matrix::SetMatrix(QList<Billet> billList)
     computeMatrix(billList);
     setGroups(matrix_, billList.count());
     clarifyGroups(billList);
+    clarifyModules();
 }
 
 QList<Operation> Matrix::computeUniqueOperationsCount(Billet billet)
@@ -303,45 +304,45 @@ void Matrix::clarifyGroups(QList<Billet> billList)
         }
     }
 
-    //Составить графы
+    //Конструктор графів
     for(auto pair: clarifiedGroups_)
     {
         QList<Node> currentGraph;
-        Node *node = new Node;
+        Node node;
         for(auto op: pair.second)
         {
-            node->node = op;
-            node->out = new QList<Node>();
-            node->in = new QList<Node>();
-            currentGraph.append(*node);
+            node.node = op;
+            node.out = new QList<Node>();
+            node.in = new QList<Node>();
+            currentGraph.append(node);
         }
         for(int i: pair.first)
         {
             Billet bill = billList[i];
             QList<Operation> ops = bill.GetAllOperations();
-            for(int i = 0; i < ops.count(); i++)
+            for(int j = 0; j < ops.count(); j++)
             {
-                Node *currNode = new Node;
-                for(int j = 0; j < currentGraph.count(); j++)
+                Node currNode;
+                for(int k = 0; k < currentGraph.count(); k++)
                 {
-                    currNode = &currentGraph[j];
-                    if(currNode->node == ops[i] && i == 0)
+                    currNode = currentGraph[k];
+                    if(currNode.node == ops[j] && j == 0)
                     {
                         node = currNode;
                         break;
                     }
-                    if(currNode->node == ops[i])
+                    if(currNode.node == ops[j])
                     {
-                        if(!node->out->contains(*currNode))
+                        if(!node.out->contains(currNode))
                         {
-                            node->out->append(*currNode);
-                            currentGraph[j-1] = *node;
+                            node.out->append(currNode);
                         }
-                        if(!currNode->in->contains(*node))
+                        currentGraph[currentGraph.indexOf(node)] = node;
+                        if(!currNode.in->contains(node))
                         {
-                            currNode->in->append(*node);
-                            currentGraph[j] = *currNode;
+                            currNode.in->append(node);
                         }
+                        currentGraph[k] = currNode;
                         node = currNode;
                         break;
                     }
@@ -355,6 +356,7 @@ void Matrix::clarifyGroups(QList<Billet> billList)
 
     QString text;
     text.append(QString("Уточненні группи"));
+    ui->textBrowser->append(text);
     for(int key : clarifiedGroups_.keys())
     {
         text = QString("Група %1: {").arg(QString::number(key));
@@ -365,215 +367,389 @@ void Matrix::clarifyGroups(QList<Billet> billList)
         text.append(QString("}"));
         ui->textBrowser->append(text);
     }
+    text.clear();
+    text.append(QString("Модулі"));
+    ui->textBrowser->append(text);
+    for(int i = 0; i < modules_.count(); i++)
+    {
+        auto module = modules_[i];
+        text = QString("Модуль %1: {").arg(QString::number(i));
+        for(auto op: module)
+        {
+            switch(op.GetOperationType())
+            {
+                case OperationType::TypeT : text.append(QString("T%1 ").arg(QString::number(op.GetOperationNumber())));;
+                    break;
+                case OperationType::TypeF : text.append(QString("Ф%1 ").arg(QString::number(op.GetOperationNumber())));;
+                    break;
+                case OperationType::TypeC : text.append(QString("С%1 ").arg(QString::number(op.GetOperationNumber())));;
+                    break;
+                case OperationType::TypeR : text.append(QString("Р%1 ").arg(QString::number(op.GetOperationNumber())));;
+                    break;
+            }
+        }
+        text.append(QString("}"));
+        ui->textBrowser->append(text);
+    }
 }
 
+void Matrix::clarifyModules()
+{
+    //Впорядкувати модулі
+    for(int i = 0; i <= modules_.count(); i++)
+    {
+        for(int j = i+1; j < modules_.count(); j++)
+        {
+            auto a = modules_[i];
+            auto b = modules_[j];
+            if(a.count() > b.count())
+            {
+                modules_[i] = modules_[j];
+                modules_[j] = a;
+            }
+        }
+    }
+
+    //Оптимізувати модулі
+    bool contains = true;
+    for(int i = 0; i < modules_.count(); i++)
+    {
+        auto a = modules_[i];
+        for(int j = i+1; j < modules_.count(); j++)
+        {
+            auto b = modules_[j];
+            for(auto op : a)
+            {
+                contains = true;
+                if(!b.contains(op))
+                {
+                    contains = false;
+                }
+            }
+            if(contains)
+            {
+                modules_.removeAt(i);
+                break;
+            }
+        }
+    }
+
+    //Друга оптимізація
+    for(int i = 0; i < modules_.count(); i++)
+    {
+        auto a = modules_[i];
+        for(int j = i+1; j < modules_.count(); j++)
+        {
+            auto b = modules_[j];
+            for(auto op : a)
+            {
+                if(b.contains(op) && b.count() >= a.count())
+                {
+                    b.removeAt(b.indexOf(op));
+                }
+                else if(b.contains(op) && a.count() > b.count())
+                {
+                    a.removeAt(a.indexOf(op));
+                }
+            }
+        }
+    }
+
+    QString text;
+    text.append(QString("Уточненні модулі"));
+    ui->textBrowser->append(text);
+    for(int i = 0; i < modules_.count(); i++)
+    {
+        auto module = modules_[i];
+        text = QString("Модуль %1: {").arg(QString::number(i));
+        for(auto op: module)
+        {
+            switch(op.GetOperationType())
+            {
+                case OperationType::TypeT : text.append(QString("T%1 ").arg(QString::number(op.GetOperationNumber())));;
+                    break;
+                case OperationType::TypeF : text.append(QString("Ф%1 ").arg(QString::number(op.GetOperationNumber())));;
+                    break;
+                case OperationType::TypeC : text.append(QString("С%1 ").arg(QString::number(op.GetOperationNumber())));;
+                    break;
+                case OperationType::TypeR : text.append(QString("Р%1 ").arg(QString::number(op.GetOperationNumber())));;
+                    break;
+            }
+        }
+        text.append(QString("}"));
+        ui->textBrowser->append(text);
+    }
+}
 
 void Matrix::checkGraphs()
 {
-   int m = 1;
-   bool moduleAppended = false;
-   for(int i = 0; i < graphs_.count(); i++)
-   {       
-       for(auto graphNode: graphs_)
+    int m = 0;
+    for(auto graphNode: graphs_)
+    {
+       //перше правило (всі вхідні)
+       for(auto node: graphNode)
        {
-           //перше правило (всі вхідні)
-           moduleAppended = false;
-           for(auto node: graphNode)
+           if(node.out->isEmpty())
            {
-               if(node.out->isEmpty())
-               {
-                   for(auto module: modules_)
-                   {
-                       if(module.contains(node.node))
-                       {
-                           moduleAppended = true;
-                           break;
-                       }
-                   }
-                   if(!moduleAppended)
-                   {
-                       modules_[m].append(node.node);
-                       m++;
-                   }
-                   moduleAppended = false;
-               }
-           }
-
-           //друге правило (всі вихідні)
-           moduleAppended = false;
-           for(auto node: graphNode)
-           {
-               if(node.in->isEmpty())
-               {
-                   for(auto module: modules_)
-                   {
-                       if(module.contains(node.node))
-                       {
-                           moduleAppended = true;
-                           break;
-                       }
-                   }
-                   if(!moduleAppended)
-                   {
-                       modules_[m].append(node.node);
-                       m++;
-                   }
-                   moduleAppended = false;
-               }
-           }
-
-           //третє правило (зворотній зв'язок)
-           moduleAppended = false;
-           for(auto node1: graphNode)
-           {
-               QList<Node> nodes;
-               nodes.append(node1);
-               for(auto node2: graphNode)
-               {
-                   if(node2.out->contains(node1) && node1.out->contains(node2) && !nodes.contains(node2))
-                   {
-                       nodes.append(node2);
-                   }
-               }
-               for(auto module: modules_)
-               {
-                   for(auto checkNode: nodes)
-                   {
-                       if(module.contains(checkNode.node))
-                       {
-                           moduleAppended = true;
-                           break;
-                       }
-                   }
-
-               }
-               if(!moduleAppended)
-               {
-                   for(auto checkNode: nodes)
-                   {
-                       modules_[m].append(checkNode.node);
-                   }
-                   m++;
-               }
-               moduleAppended = false;
-           }
-
-           //четверте правило (цикли)
-           for(auto node: graphNode)
-           {
-               cycleStack_.clear();
-               recursiveFourthRule(node, node.out);
-               for(auto module: modules_)
-               {
-                   for(auto checkNode: cycleStack_)
-                   {
-                       if(module.contains(checkNode.node))
-                       {
-                           moduleAppended = true;
-                           break;
-                       }
-                   }
-
-               }
-               if(!moduleAppended)
-               {
-                   for(auto checkNode: cycleStack_)
-                   {
-                       modules_[m].append(checkNode.node);
-                   }
-                   m++;
-               }
-               moduleAppended = false;
-           }
-
-           //п'яте правило (ланцюжок)
-           Node currNode;
-           for(auto node: graphNode)
-           {
-               cycleStack_.clear();
-               cycleStack_.append(node);
-               currNode = node;
-               for(auto node2: graphNode)
-               {
-                   if(node2 == node)
-                   {
-                       continue;
-                   }
-                   if(node2 != currNode && (currNode.out->contains(node2) && node2.in->contains(currNode)))
-                   {
-                       cycleStack_.append(node2);
-                       currNode = node2;
-                   }
-                   if(node2.in->contains(node) && !node.out->contains(node2))
-                   {
-                       cycleStack_.append(node2);
-                   }
-
-               }
-               for(auto module: modules_)
-               {
-                   for(auto checkNode: cycleStack_)
-                   {
-                       if(module.contains(checkNode.node))
-                       {
-                           moduleAppended = true;
-                           break;
-                       }
-                   }
-
-               }
-               if(!moduleAppended)
-               {
-                   for(auto checkNode: cycleStack_)
-                   {
-                       modules_[m].append(checkNode.node);
-                   }
-                   m++;
-               }
-               moduleAppended = false;
-           }
-
-           //шосте правило (для вигнанців)
-           for(auto node: graphNode)
-           {
-               moduleAppended = false;
-               for(auto module: modules_)
-               {
-                   if(module.contains(node.node))
-                   {
-                       moduleAppended = true;
-                       break;
-                   }
-               }
-               if(!moduleAppended)
-               {
-                   modules_[m].append(node.node);
-                   m++;
-               }
-               moduleAppended = false;
+               QList<Operation> module;
+               module.append(node.node);
+               modules_.append(module);
            }
        }
-   }
+
+       //друге правило (всі вихідні)
+       for(auto node: graphNode)
+       {
+           if(node.in->isEmpty())
+           {
+               QList<Operation> module;
+               module.append(node.node);
+               modules_.append(module);
+           }
+       }
+
+       //третє правило (зворотній зв'язок)
+       for(auto node1: graphNode)
+       {
+           QList<Node> nodes;
+           for(auto node2: graphNode)
+           {
+               if(node2.out->contains(node1) && node1.out->contains(node2) && !nodes.contains(node2))
+               {
+                   nodes.append(node1);
+                   nodes.append(node2);
+               }
+           }
+           QList<Operation> module;
+           for(auto checkNode: nodes)
+           {
+               module.append(checkNode.node);
+           }
+           if(!module.isEmpty())
+           {
+               modules_.append(module);
+           }
+       }
+
+       //четверте правило (цикли)
+       for(auto node: graphNode)
+       {
+           cycleStack_.clear();
+           cycleFound_ = false;
+           recursiveFourthRule(node, node.out);
+           if(!cycleFound_)
+           {
+               continue;
+           }
+           QList<Operation> module;
+           for(auto checkNode: cycleStack_)
+           {
+               module.append(checkNode.node);
+           }
+           if(!module.isEmpty())
+           {
+               modules_.append(module);
+           }
+       }
+
+       //п'яте правило (ланцюжок)
+       Node currNode;
+       for(auto node: graphNode)
+       {
+           cycleStack_.clear();
+           cycleFound_ = false;
+           isCycle_ = false;
+           recursiveFivthRule(node, node.out);
+           currNode = node;
+           if(!cycleFound_)
+           {
+               continue;
+           }
+           cycleStack_.append(currNode);
+           QList<Operation> module;
+           for(auto checkNode: cycleStack_)
+           {
+               module.append(checkNode.node);
+           }
+           if(!module.isEmpty())
+           {
+               modules_.append(module);
+           }
+       }
+
+       //шосте правило (для вигнанців)
+       bool moduleAppended = false;
+       for(auto node: graphNode)
+       {
+           moduleAppended = false;
+           for(auto module: modules_)
+           {
+               if(module.contains(node.node))
+               {
+                   moduleAppended = true;
+                   break;
+               }
+           }
+           if(!moduleAppended)
+           {
+               QList<Operation> module;
+               module.append(node.node);
+               modules_.append(module);
+           }
+           moduleAppended = false;
+       }
+
+       //визначити однакові модулі
+       bool equal = true;
+       QList<QList<Operation>> deleteModules;
+       for(int i = m; i < modules_.count(); i++)
+       {
+           auto module1 = modules_[i];
+           for(int j = i+1; j < modules_.count(); j++)
+           {
+               auto module2 = modules_[j];
+               for(auto op: module2)
+               {
+                   if(!module1.contains(op))
+                   {
+                       equal = false;
+                   }
+               }
+               if(equal)
+               {
+                   deleteModules.append(module2);
+               }
+               equal = true;
+           }
+       }
+
+       //видалити однакові модулі
+       for(auto del: deleteModules)
+       {
+           modules_.removeAt(modules_.indexOf(del));
+       }
+       m = modules_.count();
+       deleteModules.clear();
+
+       //об'єднати модулі
+       for(int i = m; i < modules_.count(); i++)
+       {
+           auto module1 = modules_[i];
+           for(int j = m; j < modules_.count(); j++)
+           {
+               auto module2 = modules_[j];
+               if(i == j)
+               {
+                   continue;
+               }
+               for(auto op: module2)
+               {
+                   if(module1.contains(op))
+                   {
+                       for(auto op1: module2)
+                       {
+                           if(!module1.contains(op1))
+                           {
+                               module1.append(op1);
+                           }
+                       }
+                       deleteModules.append(module2);
+                   }
+               }
+           }
+       }
+
+       //видалити модулі які об'єднали з іншим
+       for(auto del: deleteModules)
+       {
+           modules_.removeAt(modules_.indexOf(del));
+       }
+       m = modules_.count();
+    }
 }
 
 void Matrix::recursiveFourthRule(Node firstNode, QList<Node> *nextNodes)
 {
     for(auto node: *nextNodes)
     {
-        if(node != firstNode && node.out->isEmpty())
+        if(node.out->isEmpty())
         {
-            cycleStack_.clear();
-            return;
-        }
-        if(node != firstNode && !node.out->isEmpty())
-        {
-            cycleStack_.append(node);
-            recursiveFourthRule(node, node.out);
+            break;
         }
         if(node == firstNode)
         {
             cycleStack_.append(node);
+            cycleFound_ = true;
             break;
+        }
+        if(node != firstNode)
+        {
+            if(cycleStack_.contains(node))
+            {
+                continue;
+            }
+            cycleStack_.append(node);
+            recursiveFourthRule(firstNode, node.out);
+            if(cycleFound_)
+            {
+                return;
+            }
+            cycleStack_.removeAt(cycleStack_.indexOf(node));
+            continue;
+        }
+    }
+    return;
+}
+
+void Matrix::recursiveFivthRule(Node firstNode, QList<Node> *nextNodes)
+{
+    for(auto node: *nextNodes)
+    {
+        if(firstNode == node)
+        {
+            isCycle_ = true;
+            return;
+        }
+        if(node.out->isEmpty())
+        {
+            continue;
+        }
+        if(firstNode.out->contains(node) && cycleStack_.isEmpty()) // найден второй элемент
+        {
+            cycleStack_.append(node);
+            recursiveFivthRule(firstNode, node.out);
+            if(cycleFound_ && !isCycle_)
+            {
+                break;
+            }
+            cycleStack_.removeAt(cycleStack_.indexOf(node));
+            continue;
+        }
+        if(firstNode.out->contains(node) && node.in->contains(firstNode) && !cycleStack_.isEmpty()) //найден последний элемент элемент
+        {
+            cycleStack_.append(node);
+            cycleFound_ = true;
+            if(cycleFound_ && !isCycle_)
+            {
+                break;
+            }
+            cycleStack_.removeAt(cycleStack_.indexOf(node));
+            continue;
+        }
+        if(!firstNode.out->contains(node)) // найден промежуточный элемент
+        {
+            if(cycleStack_.contains(node))
+            {
+                continue;
+            }
+            cycleStack_.append(node);
+            recursiveFivthRule(firstNode, node.out);
+            if(cycleFound_ && !isCycle_)
+            {
+                break;
+            }
+            cycleStack_.removeAt(cycleStack_.indexOf(node));
+            continue;
         }
     }
     return;

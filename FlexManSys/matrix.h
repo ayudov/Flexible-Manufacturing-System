@@ -17,11 +17,11 @@ struct Node
     QList<Node> *in;
     bool operator== (const Node n)
     {
-        return this == &n || (this->node == n.node && this->out == n.out);
+        return this->node == n.node;
     }
     bool operator!= (const Node n)
     {
-        return this != &n || (this->node != n.node && this->out != n.out);
+        return this->node != n.node;
     }
 };
 
@@ -31,7 +31,7 @@ class Matrix : public QWidget
     Q_OBJECT
 
 public:
-    explicit Matrix(QWidget *parent = 0);
+    explicit Matrix(QWidget *parent = nullptr);
     void SetMatrix(QList<Billet> billList);
     int GetUniqueOperationsCount();
     QMap<int,QList<int>> GetFormedGroups();
@@ -43,10 +43,14 @@ private:
     void computeMatrix(QList<Billet> billList);
     void collectGroup(int maxElement, int row, int colomn, int size, bool direction);
     void clarifyGroups(QList<Billet> billList);
+    void clarifyModules();
     QList<Operation> computeUniqueOperationsCount(QList<Billet> billList);
     QList<Operation> computeUniqueOperationsCount(Billet billet);
     void checkGraphs();
     void recursiveFourthRule(Node firstNode, QList<Node> *nextNodes);
+    void recursiveFivthRule(Node firstNode, QList<Node> *nextNodes);
+    bool cycleFound_;
+    bool isCycle_;
     int **matrix_;
     int uniqueOperationsCount_ = 0;
     QList<Operation> uniqueOperations_;
